@@ -2,7 +2,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-
+#include <iostream>
 #include <array>
 #include <string>
 
@@ -14,7 +14,7 @@ auto cat_to_stdout(std::string const path) -> void
 		return;
 	}
 	
-	std;;array<char, 4096> buf {0};
+	std::array<char, 4096> buf {0};
 	while (true) {
 		auto const bytes_in = read(in_fd, buf.data(), buf.size());
 		if (bytes_in == -1) {
@@ -29,13 +29,11 @@ auto cat_to_stdout(std::string const path) -> void
 			if(bytes_out == -1){
 				break; // error
 			}
-			if(bytes_out == 0){
-				break; // nothing is write
+	
+			if(bytes_out == bytes_in) {
+				break; // stop write
 			}
-			if(bytes_out < bytes_in) {
-				break; // less bytes 
-			}
-		
+	
 		}
 		
 	}
@@ -46,7 +44,7 @@ auto cat_to_stdout(std::string const path) -> void
 
 auto main(int argc, char* argv[]) -> int
 {
-	for(auto i = 1; i < argc; ++1) {
+	for(auto i = 1; i < argc; ++i) {
 		cat_to_stdout(argv[i]);
 	}
 	
