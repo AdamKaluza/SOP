@@ -10,7 +10,8 @@
 
 #include <sys/time.h>
 #include <sys/types.h>
-#include <select.h>
+#include <sys/select.h>
+#include <set>
 
 
 auto main (int argc, char* argv[]) -> int{
@@ -18,27 +19,6 @@ auto main (int argc, char* argv[]) -> int{
 	auto ip = argv[1];
 	auto port = static_cast<uint16_t>(std::stoi(argv[2]));
 	sockaddr_in addr;
-	
-	fd_set rfds;
-	struct timeval tv;
-	int retval;
-	
-	FD_ZERO(&rfds);
-	FD_SET(0,&rfds);
-	
-	tv.tv_sec =5;
-	tv.tv_usec = 0;
-	retval = select(1, &rfds,NULL ,NULL, &tv);
-	
-	if (retval == -1) {
-		perror("select()");
-	}else if {
-		printf("Data is available now.\n");
-		//FD_ISSET(0, &rfds) will be true.
-	}else {
-		printf("No data within five seconds. \n");
-	}
-	
 	
 	memset(&addr,0 , sizeof(addr));
 	addr.sin_family = AF_INET;
@@ -56,26 +36,39 @@ auto main (int argc, char* argv[]) -> int{
 	
 	listen(sock,0);
 	
-	
-	{
-		auto client = accept(sock, nullptr, nullptr);
-		std::cout<< client << std::endl;
+	auto clients = std::set<int>{};
 		
-		char buffer[1024];
-		while(true){
+	while(true){
+		
+		{
+			auto client = accept(sock, nullptr, nullptr);
+			clients.insert(client);
+			
+		}
+		
+		for(auto client : clients){
+		
+			std::cout<< client << std::endl;
+		
+			char buffer[1024];
 			
 			memset(&buffer,0 , sizeof(buffer));
 			auto s = read(client, buffer, sizeof(buffer));
-			std::cout<<buffer<<"\n";
+			
 			if(s <= 1){
+				shutdown(client, SHUT_RDWR);
+				close(client);
+				clients.erase(clients.find(client));
 				break;
 			}
+			std::cout<<buffer<<"\n";
+			
 		}
-		shutdown(client, SHUT_RDWR);
-		close(client);
-	}
+	
+}
 	
 	shutdown(sock, SHUT_RDWR);
 	close(sock);
 	return 0;
 }
+
