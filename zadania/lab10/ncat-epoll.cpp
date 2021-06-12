@@ -40,20 +40,20 @@ auto main(int argc, char* argv[]) -> int{
 		epoll_event ev;
 		ev.events = EPOLLIN;
 		ev.data.fd = sock;
-		epoll_ctrl(api, EPOLL_CTL_ADD, sock, &ev);
+		epoll_ctl(api, EPOLL_CTL_ADD, sock, &ev);
 	}
     
     while(true){
-		 auto vec = std::vector<epoll_event>(clients.size()+1);
+		 auto events = std::vector<epoll_event>(clients.size()+1);
 		 auto const nfds = epoll_wait(api,events.data(), events.size(), 10);
-		 for(auto i=0; i <nfds; i++){
-			if(events[i].data.fd== sock){
+		 for(auto i=0; i < nfds; ++i){
+			if(events[i].data.fd == sock){
 			    auto client = accept(sock, nullptr, nullptr);
 			    clients.insert(client);
 			   	epoll_event ev;
 				ev.events = EPOLLIN;
-				ev.data.fd = sock;
-				epoll_ctrl(epi, EPOLL_CTL_ADD, client, &ev);
+				ev.data.fd = client;
+				epoll_ctl(epi, EPOLL_CTL_ADD, client, &ev);
 			}else{
 				auto client = events[i].data.fd;
 				std::cout << client << std::endl;
@@ -72,7 +72,6 @@ auto main(int argc, char* argv[]) -> int{
 		}
   
     shutdown(sock, SHUT_RDWR);
-	close(sock);
-
+	close(sock)
     return 0;
 }
