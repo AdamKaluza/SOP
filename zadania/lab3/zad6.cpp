@@ -1,11 +1,12 @@
 #include <iostream>
 #include <signal.h>
 #include <string.h>
-
+#include <sys/types.h>
+#include <unistd.h>
 
 auto signal_handler(int, siginfo_t* info, void*) -> void {
 	std::cout
-	<< "Process PID " << info->si_pid
+	<< "Process PID " << getpid()
 	<< " got signal " << info->si_signo
 	<< " (" << strsignal(info->si_signo) << ")\n";
 }

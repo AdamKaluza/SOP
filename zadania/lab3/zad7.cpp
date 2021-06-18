@@ -10,7 +10,7 @@ auto handler_sigusr1(int signum) -> void {
   auto ret = write(2, msg, sizeof(msg) - 1);
   std::cout << ret;
 }
-auto main() -> int {
+auto main(int argc, char *argv[]) -> int {
   struct sigaction action;
 
   action.sa_flags = 0;
